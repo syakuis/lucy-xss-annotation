@@ -89,7 +89,7 @@ public class XssContollerTest {
 		String json = objectMapper.writeValueAsString(foo);
 
  		mockMvc.perform(
-				post("/xss/10000")
+				post("/xss/10000?html=" + escape)
 						.content(json)
 						.contentType(MediaType.APPLICATION_JSON_UTF8)
 				)

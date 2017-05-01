@@ -36,6 +36,7 @@ public class XssFilterConverter implements ObjectRefConverter {
 		XssType xssType = ((Defence) annotation).value();
 
 		String value = (String) object;
+		logger.debug("---------------------> {}", XssPreventer.escape(value));
 
 		if (xssType.equals(XssType.SAX)) {
 			return xssSaxFilter.doFilter(value);

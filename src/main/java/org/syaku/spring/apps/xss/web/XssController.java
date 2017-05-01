@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.syaku.spring.apps.xss.domain.Foo;
 import org.syaku.spring.xss.support.Defence;
+import org.syaku.spring.xss.support.XssType;
 
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
@@ -18,15 +19,15 @@ public class XssController {
 	private static final Logger logger = LoggerFactory.getLogger(XssController.class);
 
 	@GetMapping("")
-	public String getView(
-			@Defence @RequestParam(value = "html", required = false) String html) {
+	public String dispView(
+			@RequestParam(value = "html", required = false) @Defence(XssType.ESCAPE) String html) {
 		logger.debug("{}", html);
 		return "xss/xss";
 	}
 
 	@PostMapping("/{idx}")
 	@ResponseBody
-	public Foo getPost(
+	public Foo procPost(
 			@Defence @RequestBody Foo foo,
 			@PathVariable("idx") String idx,
 			@RequestParam(value = "html", required = false) String html) {

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.syaku.spring.xss.support.reflection.ObjectRef;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
@@ -31,7 +32,7 @@ public class XssFilterAspect {
 	@Autowired
 	private XssFilter xssFilter;
 
-	@Pointcut("within(org.syaku.spring.apps.xss.web.*) && @target(org.springframework.stereotype.Controller)")
+	@Pointcut("within(org.syaku.spring.apps.*.web.*) && @target(org.springframework.stereotype.Controller)")
 	public void porintTarget() {
 		if (logger.isDebugEnabled()) {
 			logger.debug(">< >< invoke aspectj");
@@ -50,5 +51,6 @@ public class XssFilterAspect {
 		XssFilterConverter converter = new XssFilterConverter(xssFilter, xssSaxFilter);
 		ObjectRef objectRef = new ObjectRef(converter);
 		objectRef.getMethodParameter(method, args);
+		logger.debug("{}", Arrays.asList(args).toString());
 	}
 }
