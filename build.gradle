@@ -1,0 +1,77 @@
+buildscript {
+    repositories {
+        maven { url 'http://repo.spring.io/plugins-release' }
+    }
+    dependencies {
+        classpath 'io.spring.gradle:propdeps-plugin:0.0.8'
+    }
+}
+
+group 'org.syaku.lucyxss.annotation'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'pmd'
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    tutorialsVersion = '1.1.0'
+    slf4jVersion = '1.7.25'
+    junitVersion = '4.12'
+
+    springVersion = '4.3.7.RELEASE'
+    jacksonVersion = '2.7.0'
+}
+
+pmd {
+    ignoreFailures = true
+    reportsDir = file("$project.buildDir/reports/pmd")
+    ruleSetFiles = files('pmd.xml')
+    sourceSets = [sourceSets.main]
+}
+
+configurations.all {
+    exclude group: "commons-logging", module: "commons-logging"
+}
+
+dependencies {
+    compile "org.slf4j:jcl-over-slf4j:$slf4jVersion",
+            "org.slf4j:slf4j-api:$slf4jVersion"
+
+    runtime('ch.qos.logback:logback-classic:1.1.7') {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+
+    testCompile "junit:junit:$junitVersion",
+                'org.jmock:jmock-junit4:2.8.2',
+                'com.jayway.jsonpath:json-path:2.2.0',
+                'com.jayway.jsonpath:json-path-assert:2.2.0',
+                "org.springframework:spring-test:$springVersion"
+
+    compile 'org.aspectj:aspectjweaver:1.8.9'
+
+    compile "org.springframework:spring-webmvc:$springVersion",
+            "org.springframework:spring-aop:$springVersion",
+            "org.springframework:spring-context-support:$springVersion"
+
+    compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}",
+            "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}",
+            "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+
+    compile 'org.freemarker:freemarker:2.3.23'
+
+    compile 'org.projectlombok:lombok:1.16.16'
+
+    compile 'org.apache.commons:commons-lang3:3.4'
+
+    provided 'javax.servlet:javax.servlet-api:3.0.1',
+             'javax.el:javax.el-api:2.2.4'
+}
