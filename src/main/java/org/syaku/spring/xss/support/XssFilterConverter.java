@@ -1,4 +1,4 @@
-package org.syaku.spring.apps.xss.aop;
+package org.syaku.spring.apps.xss.support;
 
 import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssPreventer;
@@ -36,8 +36,7 @@ public class XssFilterConverter implements ObjectRefConverter {
 		XssType xssType = ((Defence) annotation).value();
 
 		String value = (String) object;
-		logger.debug("---------------------> {}", XssPreventer.escape(value));
-
+		
 		if (xssType.equals(XssType.SAX)) {
 			return xssSaxFilter.doFilter(value);
 		} else if (xssType.equals(XssType.DOM)) {

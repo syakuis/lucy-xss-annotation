@@ -3,6 +3,8 @@ package org.syaku.spring.apps.xss.aop;
 import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -32,15 +34,8 @@ public class XssFilterAspect {
 	@Autowired
 	private XssFilter xssFilter;
 
-	@Pointcut("within(org.syaku.spring.apps.*.web.*) && @target(org.springframework.stereotype.Controller)")
-	public void porintTarget() {
-		if (logger.isDebugEnabled()) {
-			logger.debug(">< >< invoke aspectj");
-		}
-	}
-
-	@Before("porintTarget() && (execution(public * *(.., @org.syaku.spring.xss.support.Defence (*))) || execution(public * *(@org.syaku.spring.xss.support.Defence (*), ..)) || execution(public * *(.., @org.syaku.spring.xss.support.Defence (*), ..)))")
-	public void xssFilter(JoinPoint point) throws InstantiationException, IllegalAccessException {
+	@Around("@target(org.springframework.stereotype.Controller) && (execution(public * *(.., @org.syaku.spring.xss.support.Defence (*))) || execution(public * *(@org.syaku.spring.xss.support.Defence (*), ..)) || execution(public * *(.., @org.syaku.spring.xss.support.Defence (*), ..)))")
+	public Object xssFilter(ProceedingJoinPoint point) throws Throwable {
 		if (logger.isDebugEnabled()) {
 			logger.debug(">< >< invoke aspectj");
 		}
@@ -50,7 +45,6 @@ public class XssFilterAspect {
 		Object[] args =  point.getArgs();
 		XssFilterConverter converter = new XssFilterConverter(xssFilter, xssSaxFilter);
 		ObjectRef objectRef = new ObjectRef(converter);
-		objectRef.getMethodParameter(method, args);
-		logger.debug("{}", Arrays.asList(args).toString());
+		return point.proceed(objectRef.getMethodParameter(method, args));
 	}
 }

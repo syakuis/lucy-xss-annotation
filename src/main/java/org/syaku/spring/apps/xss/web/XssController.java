@@ -1,12 +1,13 @@
 package org.syaku.spring.apps.xss.web;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.syaku.spring.apps.xss.domain.Foo;
 import org.syaku.spring.xss.support.Defence;
 import org.syaku.spring.xss.support.XssType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
@@ -16,23 +17,22 @@ import org.syaku.spring.xss.support.XssType;
 @Controller
 @RequestMapping("/xss")
 public class XssController {
-	private static final Logger logger = LoggerFactory.getLogger(XssController.class);
 
 	@GetMapping("")
-	public String dispView(
+	@ResponseBody
+	public Map<String, String> dispView(
 			@RequestParam(value = "html", required = false) @Defence(XssType.ESCAPE) String html) {
-		logger.debug("{}", html);
-		return "xss/xss";
+		Map<String, String> result = new HashMap<>();
+		result.put("html", html);
+		return result;
 	}
 
 	@PostMapping("/{idx}")
 	@ResponseBody
 	public Foo procPost(
 			@Defence @RequestBody Foo foo,
-			@PathVariable("idx") String idx,
-			@RequestParam(value = "html", required = false) String html) {
-		logger.debug("{}", html);
-		logger.debug("{}", foo);
+			@Defence @PathVariable("idx") String idx) {
+		foo.setIdx(idx);
 		return foo;
 	}
 }

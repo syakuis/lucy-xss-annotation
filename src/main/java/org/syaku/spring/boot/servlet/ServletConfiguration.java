@@ -2,7 +2,6 @@ package org.syaku.spring.boot.servlet;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,7 +19,6 @@ import java.nio.charset.StandardCharsets;
  * @since 2017. 4. 13.
  */
 @Configuration
-@EnableAspectJAutoProxy
 @EnableWebMvc
 @ComponentScan(
 		basePackages = "org.syaku.spring.apps",

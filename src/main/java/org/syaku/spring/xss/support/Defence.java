@@ -17,5 +17,5 @@ import java.lang.annotation.Target;
 })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Defence {
-	XssType value() default XssType.SAX;
+	XssType value() default XssType.DOM;
 }

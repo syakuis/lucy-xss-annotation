@@ -8,19 +8,19 @@ import org.syaku.spring.xss.support.XssType;
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
  * @site http://syaku.tistory.com
- * @since 2017. 5. 1.
+ * @since 2017. 5. 2.
  */
 @ToString
 @Data
-public class Too {
+public class Doo {
 	@Defence(XssType.SAX)
 	private String saxFilter;
 	private String noFilter;
 
-	public Too() {
+	public Doo() {
 	}
 
-	public Too(String saxFilter, String noFilter) {
+	public Doo(String saxFilter, String noFilter) {
 		this.saxFilter = saxFilter;
 		this.noFilter = noFilter;
 	}

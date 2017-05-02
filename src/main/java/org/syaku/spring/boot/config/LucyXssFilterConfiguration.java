@@ -4,6 +4,7 @@ import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.syaku.spring.xss.support.aop.XssFilterAspect;
 
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
@@ -21,5 +22,10 @@ public class LucyXssFilterConfiguration {
 	@Bean
 	public XssFilter xssFilter() {
 		return XssFilter.getInstance("lucy-xss.xml", true);
+	}
+
+	@Bean
+	public XssFilterAspect xssFilterAspect() {
+		return new XssFilterAspect();
 	}
 }
