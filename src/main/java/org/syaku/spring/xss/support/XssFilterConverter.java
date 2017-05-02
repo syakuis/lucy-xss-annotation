@@ -1,12 +1,10 @@
-package org.syaku.spring.apps.xss.support;
+package org.syaku.spring.xss.support;
 
 import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssPreventer;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.syaku.spring.xss.support.Defence;
-import org.syaku.spring.xss.support.XssType;
 import org.syaku.spring.xss.support.reflection.ObjectRefConverter;
 
 import java.lang.annotation.Annotation;

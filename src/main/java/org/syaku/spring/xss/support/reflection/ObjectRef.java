@@ -56,7 +56,7 @@ public class ObjectRef {
 	 * @param method the method
 	 * @param args   the args
 	 */
-	public void getMethodParameter(Method method, Object[] args) {
+	public Object[] getMethodParameter(Method method, Object[] args) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("MethodName {}, Parameters {}, Annotation", method.getName(), Arrays.asList(args).toString(), this.annotation);
 		}
@@ -96,6 +96,8 @@ public class ObjectRef {
 			}
 		}
 		*/
+
+		return args;
 	}
 
 	private boolean isWrapperType(Class<?> clazz) {

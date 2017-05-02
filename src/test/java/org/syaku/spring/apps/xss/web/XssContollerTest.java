@@ -131,14 +131,14 @@ public class XssContollerTest {
 		List<Too> toos = new ArrayList<>();
 
 		for (int i = 0; i < 10; i++) {
-		//	toos.add(new Too(saxFilter, saxFilter));
+			toos.add(new Too(saxFilter, saxFilter));
 		}
 		foo.setToos(toos);
 
 		List<Doo> doos = new ArrayList<>();
 
 		for (int i = 0; i < 10; i++) {
-		//	doos.add(new Doo(saxFilter, saxFilter));
+			doos.add(new Doo(saxFilter, saxFilter));
 		}
 		foo.setDoos(doos);
 
@@ -157,10 +157,10 @@ public class XssContollerTest {
 				.andExpect(jsonPath("$.escape", is(XssPreventer.escape(escape))))
 				.andExpect(jsonPath("$.use", is(true)))
 				//.andExpect(jsonPath("$.otherFilter[0]", is(xssSaxFilter.doFilter(otherFilter))))
-				//.andExpect(jsonPath("$.toos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
-				//.andExpect(jsonPath("$.toos[0].noFilter", is(saxFilter)))
-				//.andExpect(jsonPath("$.doos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
-				//.andExpect(jsonPath("$.doos[0].noFilter", is(saxFilter)))
+				.andExpect(jsonPath("$.toos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
+				.andExpect(jsonPath("$.toos[0].noFilter", is(saxFilter)))
+				.andExpect(jsonPath("$.doos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
+				.andExpect(jsonPath("$.doos[0].noFilter", is(saxFilter)))
 				.andDo(print());
 
 	}

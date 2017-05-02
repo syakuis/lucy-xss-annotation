@@ -1,22 +1,19 @@
-package org.syaku.spring.apps.xss.aop;
+package org.syaku.spring.xss.support.aop;
 
 import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.syaku.spring.xss.support.XssFilterConverter;
 import org.syaku.spring.xss.support.reflection.ObjectRef;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
