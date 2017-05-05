@@ -32,7 +32,7 @@ public class ObjectRef {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getValue(Object value, Class<T> clazz) {
+	public <T> T getValue(Object value, Class<T> clazz) throws ObjectRefException {
 		return getValue(value, null, clazz);
 	}
 
@@ -46,7 +46,7 @@ public class ObjectRef {
 	 * @return the value
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getValue(Object value, Annotation annotation, Class<T> clazz) {
+	public <T> T getValue(Object value, Annotation annotation, Class<T> clazz) throws ObjectRefException {
 		return clazz.cast(getType(value, annotation));
 	}
 
@@ -56,7 +56,7 @@ public class ObjectRef {
 	 * @param method the method
 	 * @param args   the args
 	 */
-	public Object[] getMethodParameter(Method method, Object[] args) {
+	public Object[] getMethodParameter(Method method, Object[] args) throws ObjectRefException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("MethodName {}, Parameters {}, Annotation", method.getName(), Arrays.asList(args).toString(), this.annotation);
 		}
@@ -111,7 +111,7 @@ public class ObjectRef {
 				clazz.equals(Float.class);
 	}
 
-	private Object getType(Object value, Annotation annotation) {
+	private Object getType(Object value, Annotation annotation) throws ObjectRefException {
 		if (value == null) {
 			return null;
 		}
@@ -131,15 +131,15 @@ public class ObjectRef {
 				return getObject(value);
 			}
 		} catch (IllegalAccessException iae) {
-			logger.error(iae.getMessage(), iae);
+			throw new ObjectRefException(iae.getMessage(), iae);
 		} catch (InstantiationException ie) {
-			logger.error(ie.getMessage(), ie);
+			throw new ObjectRefException(ie.getMessage(), ie);
+		} catch (ClassNotFoundException cfe) {
+			throw new ObjectRefException(cfe.getMessage(), cfe);
 		}
-
-		return value;
 	}
 
-	private Object getObject(Object object) throws IllegalAccessException, InstantiationException {
+	private Object getObject(Object object) throws ObjectRefException, IllegalAccessException, InstantiationException {
 		Class clz = object.getClass();
 
 		boolean isAnnoTypeClz = true;
@@ -188,7 +188,7 @@ public class ObjectRef {
 		return object;
 	}
 
-	private Object[] getArray(Object object, Annotation annotation) throws IllegalAccessException, InstantiationException {
+	private Object[] getArray(Object object, Annotation annotation) throws ObjectRefException, IllegalAccessException, InstantiationException {
 		Object[] objects = (Object[]) object;
 		int count = objects.length;
 
@@ -201,7 +201,7 @@ public class ObjectRef {
 		return result;
 	}
 
-	private Map getMap(Object object, Annotation annotation) throws IllegalAccessException, InstantiationException {
+	private Map getMap(Object object, Annotation annotation) throws ObjectRefException, IllegalAccessException, InstantiationException {
 		Map result = (Map) object.getClass().newInstance();
 		Map map = (Map) object;
 
@@ -216,25 +216,22 @@ public class ObjectRef {
 		return result;
 	}
 
-	private Collection getCollection(Object object, Annotation annotation) throws InstantiationException, IllegalAccessException {
+	private Collection getCollection(Object object, Annotation annotation) throws ObjectRefException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		Class clz = object.getClass();
-		Collection result = Collections.emptyList();
+		Collection result;
 
-		try {
-			// Arrays.asTo(...) ArrayList 와 다른 타입이므로 변경한다.
-			Class<?> arraysType = Class.forName("java.util.Arrays$ArrayList");
-			if (arraysType.isAssignableFrom(clz)) {
-				result = new ArrayList();
-			} else {
-				result = (Collection) object.getClass().newInstance();
-			}
-
-			for(Object value : (Collection) object) {
-				result.add(getType(value, annotation));
-			}
-		} catch (ClassNotFoundException e) {
-			logger.debug(e.getMessage());
+		// Arrays.asTo(...) ArrayList 와 다른 타입이므로 변경한다.
+		Class<?> arraysType = Class.forName("java.util.Arrays$ArrayList");
+		if (arraysType.isAssignableFrom(clz)) {
+			result = new ArrayList();
+		} else {
+			result = (Collection) object.getClass().newInstance();
 		}
+
+		for(Object value : (Collection) object) {
+			result.add(getType(value, annotation));
+		}
+
 
 		return result;
 	}

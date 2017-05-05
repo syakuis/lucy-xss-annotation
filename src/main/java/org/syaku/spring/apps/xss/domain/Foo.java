@@ -22,6 +22,8 @@ public class Foo extends Ext {
 	private String filter;
 	@Defence
 	private List<Too> toos;
+	@Defence
+	private List<Too> toos2;
 	private boolean use;
 	@Defence(XssType.SAX)
 	private Set<String> otherFilter;

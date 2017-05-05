@@ -26,6 +26,7 @@ import org.syaku.spring.boot.servlet.ServletConfiguration;
 import org.syaku.spring.xss.support.XssFilterConverter;
 import org.syaku.spring.xss.support.reflection.ObjectRef;
 import org.syaku.spring.xss.support.reflection.ObjectRefConverter;
+import org.syaku.spring.xss.support.reflection.ObjectRefException;
 
 import java.util.*;
 
@@ -68,7 +69,7 @@ public class XssContollerTest {
 	}
 
 	@Test
-	public void xssFilterValue() {
+	public void xssFilterValue() throws ObjectRefException {
 		Set<String> other = new HashSet<>();
 		other.add(otherFilter);
 
@@ -121,6 +122,19 @@ public class XssContollerTest {
 		}
 		foo.setToos(toos);
 
+		List<Too> toos2 = Arrays.asList(
+				new Too("", ""),
+				new Too(saxFilter, saxFilter),
+				new Too("", ""),
+				new Too("", ""),
+				new Too("", ""),
+				new Too("", ""),
+				new Too("", ""),
+				new Too("", ""),
+				new Too("", "")
+		);
+		foo.setToos2(toos2);
+
 		List<Doo> doos = new LinkedList<>();
 
 		for (int i = 0; i < 10; i++) {
@@ -161,6 +175,8 @@ public class XssContollerTest {
 				.andExpect(jsonPath("$.otherFilter[0]", is(xssSaxFilter.doFilter(otherFilter))))
 				.andExpect(jsonPath("$.toos[5].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
 				.andExpect(jsonPath("$.toos[5].noFilter", is(saxFilter)))
+				.andExpect(jsonPath("$.toos2[1].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
+				.andExpect(jsonPath("$.toos2[1].noFilter", is(saxFilter)))
 				.andExpect(jsonPath("$.doos[5].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
 				.andExpect(jsonPath("$.doos[5].noFilter", is(saxFilter)))
 				.andExpect(jsonPath("$.map.c", is(xssSaxFilter.doFilter(otherFilter))))

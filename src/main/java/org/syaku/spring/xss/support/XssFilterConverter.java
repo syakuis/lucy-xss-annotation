@@ -29,14 +29,12 @@ public class XssFilterConverter implements ObjectRefConverter {
 
 		XssType xssType = ((Defence) annotation).value();
 
-		String value = (String) object;
-		
 		if (xssType.equals(XssType.SAX)) {
-			return xssSaxFilter.doFilter(value);
+			return xssSaxFilter.doFilter(String.valueOf(object));
 		} else if (xssType.equals(XssType.DOM)) {
-			return xssFilter.doFilter(value);
+			return xssFilter.doFilter(String.valueOf(object));
 		} else {
-			return XssPreventer.escape(value);
+			return XssPreventer.escape(String.valueOf(object));
 		}
 	}
 

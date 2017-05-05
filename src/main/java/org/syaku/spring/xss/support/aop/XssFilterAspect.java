@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
  * @since 2017. 4. 13.
  */
 @Aspect
-@Component
 public class XssFilterAspect {
 	private static final Logger logger = LoggerFactory.getLogger(XssFilterAspect.class);
 
@@ -38,10 +37,7 @@ public class XssFilterAspect {
 		}
 		MethodSignature signature = (MethodSignature) point.getSignature();
 		Method method = signature.getMethod();
-
-		Object[] args =  point.getArgs();
-		XssFilterConverter converter = new XssFilterConverter(xssFilter, xssSaxFilter);
-		ObjectRef objectRef = new ObjectRef(converter);
-		return point.proceed(objectRef.getMethodParameter(method, args));
+		
+		return point.proceed(new ObjectRef(new XssFilterConverter(xssFilter, xssSaxFilter)).getMethodParameter(method, point.getArgs()));
 	}
 }
