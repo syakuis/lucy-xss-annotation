@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssPreventer;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.syaku.spring.apps.xss.domain.Doo;
@@ -21,6 +23,7 @@ import org.syaku.spring.apps.xss.domain.Foo;
 import org.syaku.spring.apps.xss.domain.Too;
 import org.syaku.spring.boot.Bootstrap;
 import org.syaku.spring.boot.servlet.ServletConfiguration;
+import org.syaku.spring.xss.support.XssFilterConverter;
 import org.syaku.spring.xss.support.reflection.ObjectRef;
 import org.syaku.spring.xss.support.reflection.ObjectRefConverter;
 
@@ -77,6 +80,7 @@ public class XssContollerTest {
 
 		Foo result = ref.getValue(foo, Foo.class);
 		Set<String> other2 = result.getOtherFilter();
+		System.out.println(other2.toString());
 		String otherFilter2 = other2.iterator().next();
 
 		Assert.assertEquals(otherFilter2, xssSaxFilter.doFilter(otherFilter));
@@ -101,38 +105,49 @@ public class XssContollerTest {
 
 		Set<String> other = new HashSet<>();
 		other.add(otherFilter);
+		other.add(otherFilter);
+		other.add(otherFilter);
+		other.add(otherFilter);
 		foo.setOtherFilter(other);
 
 		List<Too> toos = new ArrayList<>();
 
 		for (int i = 0; i < 10; i++) {
-			toos.add(new Too(saxFilter, saxFilter));
+			if(i == 5) {
+				toos.add(new Too(saxFilter, saxFilter));
+			} else {
+				toos.add(new Too("", ""));
+			}
 		}
 		foo.setToos(toos);
 
 		List<Doo> doos = new LinkedList<>();
 
 		for (int i = 0; i < 10; i++) {
-			doos.add(new Doo(saxFilter, saxFilter));
+			if (i == 5) {
+				doos.add(new Doo(saxFilter, saxFilter));
+			} else {
+				doos.add(new Doo("", ""));
+			}
 		}
 		foo.setDoos(doos);
 
 		Map<String, String> map = new HashMap<>();
-		map.put("a", otherFilter);
-		map.put("b", otherFilter);
+		map.put("a", "1");
+		map.put("b", "2");
 		map.put("c", otherFilter);
-		map.put("d", otherFilter);
-		map.put("e", otherFilter);
+		map.put("d", "4");
+		map.put("e", "5");
 
 		foo.setMap(map);
 
-		String[] arrays = { otherFilter, otherFilter, otherFilter};
+		String[] arrays = { "1", "2", otherFilter};
 		foo.setArrays(arrays);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		String json = objectMapper.writeValueAsString(foo);
 
- 		mockMvc.perform(
+ 		MvcResult result = mockMvc.perform(
 				post("/xss/10000")
 						.content(json)
 						.contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -144,12 +159,20 @@ public class XssContollerTest {
 				.andExpect(jsonPath("$.escape", is(XssPreventer.escape(escape))))
 				.andExpect(jsonPath("$.use", is(true)))
 				.andExpect(jsonPath("$.otherFilter[0]", is(xssSaxFilter.doFilter(otherFilter))))
-				.andExpect(jsonPath("$.toos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
-				.andExpect(jsonPath("$.toos[0].noFilter", is(saxFilter)))
-				.andExpect(jsonPath("$.doos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
-				.andExpect(jsonPath("$.doos[0].noFilter", is(saxFilter)))
-				.andExpect(jsonPath("$.map.e", is(xssSaxFilter.doFilter(otherFilter))))
-				.andExpect(jsonPath("$.arrays[0]", is(xssSaxFilter.doFilter(otherFilter))))
-				.andDo(print());
+				.andExpect(jsonPath("$.toos[5].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
+				.andExpect(jsonPath("$.toos[5].noFilter", is(saxFilter)))
+				.andExpect(jsonPath("$.doos[5].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
+				.andExpect(jsonPath("$.doos[5].noFilter", is(saxFilter)))
+				.andExpect(jsonPath("$.map.c", is(xssSaxFilter.doFilter(otherFilter))))
+				.andExpect(jsonPath("$.arrays[2]", is(xssSaxFilter.doFilter(otherFilter))))
+				.andDo(print()).andReturn();
+
+		ObjectRefConverter converter = new XssFilterConverter(xssFilter, xssSaxFilter);
+		ObjectRef ref = new ObjectRef(converter);
+
+ 		Foo foo2 = objectMapper.readValue(result.getResponse().getContentAsString(), Foo.class);
+		Foo refFoo = ref.getValue(foo, Foo.class);
+		Assert.assertEquals(refFoo, foo2);
+		Assert.assertTrue(EqualsBuilder.reflectionEquals(refFoo,foo2));
 	}
 }

@@ -112,7 +112,9 @@ public class ObjectRef {
 	}
 
 	private Object getType(Object value, Annotation annotation) {
-		if (value == null) return null;
+		if (value == null) {
+			return null;
+		}
 		Class clz = value.getClass();
 
 		try {
