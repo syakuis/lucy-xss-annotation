@@ -7,7 +7,7 @@
     <groupId>org.syaku.lucyxss.annotation</groupId>
     <artifactId>lucy-xss-annotation</artifactId>
     <version>1.0.0</version>
-    <name>spring-starter</name>
+    <name>lucy-xss-annotation</name>
     <packaging>war</packaging>
 
     <properties>
