@@ -121,13 +121,14 @@ public class ObjectRef {
 
 		try {
 			if (isWrapperType(clz) || clz == String.class) {
+				logger.debug(">< >< === Reference Type {} {} {}", annotation, value, clz);
 				return converter.value(value, annotation);
 			} else if (clz.isArray()) {
-				return getArray(value);
+				return getArray(value, annotation);
 			} else if (Collection.class.isAssignableFrom(clz)) {
-				return getCollection(value);
+				return getCollection(value, annotation);
 			} else if (Map.class.isAssignableFrom(clz)) {
-				return getMap(value);
+				return getMap(value, annotation);
 			} else {
 				return getObject(value);
 			}
@@ -189,20 +190,20 @@ public class ObjectRef {
 		return object;
 	}
 
-	private Object[] getArray(Object object) throws IllegalAccessException, InstantiationException {
+	private Object[] getArray(Object object, Annotation annotation) throws IllegalAccessException, InstantiationException {
 		Object[] objects = (Object[]) object;
 		int count = objects.length;
 
 		Object[] result = (Object[]) Array.newInstance(object.getClass().getComponentType(), count);
 
 		for (int i = 0; i < count; i++) {
-			Array.set(result, i, getType(objects[i]));
+			Array.set(result, i, getType(objects[i], annotation));
 		}
 
 		return result;
 	}
 
-	private Map getMap(Object object) throws IllegalAccessException, InstantiationException {
+	private Map getMap(Object object, Annotation annotation) throws IllegalAccessException, InstantiationException {
 		Map result = (Map) object.getClass().newInstance();
 		Map map = (Map) object;
 
@@ -210,14 +211,14 @@ public class ObjectRef {
 		while(iterator.hasNext()) {
 			Map.Entry entry = iterator.next();
 			Object key = entry.getKey();
-			result.put(key, getType(map.get(key)));
+			result.put(key, getType(map.get(key), annotation));
 		}
 
 
 		return result;
 	}
 
-	private Collection getCollection(Object object) throws InstantiationException, IllegalAccessException {
+	private Collection getCollection(Object object, Annotation annotation) throws InstantiationException, IllegalAccessException {
 		Class clz = object.getClass();
 		Collection result = Collections.emptyList();
 
@@ -231,7 +232,7 @@ public class ObjectRef {
 			}
 
 			for(Object value : (Collection) object) {
-				result.add(getType(value));
+				result.add(getType(value, annotation));
 			}
 		} catch (ClassNotFoundException e) {
 			logger.debug(e.getMessage());

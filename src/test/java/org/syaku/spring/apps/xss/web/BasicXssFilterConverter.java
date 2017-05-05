@@ -1,7 +1,6 @@
-package org.syaku.spring.xss.support;
+package org.syaku.spring.apps.xss.web;
 
 import com.nhncorp.lucy.security.xss.XssFilter;
-import com.nhncorp.lucy.security.xss.XssPreventer;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
 import org.syaku.spring.xss.support.reflection.ObjectRefConverter;
 
@@ -10,38 +9,30 @@ import java.lang.annotation.Annotation;
 /**
  * @author Seok Kyun. Choi. 최석균 (Syaku)
  * @site http://syaku.tistory.com
- * @since 2017. 4. 24.
+ * @since 2017. 5. 4.
  */
-public class XssFilterConverter implements ObjectRefConverter {
+public class BasicXssFilterConverter implements ObjectRefConverter {
 	private XssFilter xssFilter;
 	private XssSaxFilter xssSaxFilter;
 
-	public XssFilterConverter(XssFilter xssFilter, XssSaxFilter xssSaxFilter) {
+	public BasicXssFilterConverter(XssFilter xssFilter, XssSaxFilter xssSaxFilter) {
 		this.xssFilter = xssFilter;
 		this.xssSaxFilter = xssSaxFilter;
 	}
 
 	@Override
 	public Object value(Object object, Annotation annotation) {
-		if (annotation == null || object == null || object.getClass() != String.class) {
+		if (object == null || object.getClass() != String.class) {
 			return object;
 		}
 
-		XssType xssType = ((Defence) annotation).value();
-
 		String value = (String) object;
-		
-		if (xssType.equals(XssType.SAX)) {
-			return xssSaxFilter.doFilter(value);
-		} else if (xssType.equals(XssType.DOM)) {
-			return xssFilter.doFilter(value);
-		} else {
-			return XssPreventer.escape(value);
-		}
+
+		return xssSaxFilter.doFilter(value);
 	}
 
 	@Override
 	public Class<? extends Annotation> getAnnotation() {
-		return Defence.class;
+		return null;
 	}
 }

@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhncorp.lucy.security.xss.XssFilter;
 import com.nhncorp.lucy.security.xss.XssPreventer;
 import com.nhncorp.lucy.security.xss.XssSaxFilter;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,6 +21,8 @@ import org.syaku.spring.apps.xss.domain.Foo;
 import org.syaku.spring.apps.xss.domain.Too;
 import org.syaku.spring.boot.Bootstrap;
 import org.syaku.spring.boot.servlet.ServletConfiguration;
+import org.syaku.spring.xss.support.reflection.ObjectRef;
+import org.syaku.spring.xss.support.reflection.ObjectRefConverter;
 
 import java.util.*;
 
@@ -43,8 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 		ServletConfiguration.class
 })
 public class XssContollerTest {
-	private static final Logger logger = LoggerFactory.getLogger(XssContollerTest.class);
-
 	private MockMvc mockMvc;
 
 	@Autowired
@@ -66,45 +64,22 @@ public class XssContollerTest {
 		mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
 	}
 
-	private boolean isWrapperType(Class<?> clazz) {
-		return clazz.equals(Boolean.class) ||
-				clazz.equals(Integer.class) ||
-				clazz.equals(Character.class) ||
-				clazz.equals(Byte.class) ||
-				clazz.equals(Short.class) ||
-				clazz.equals(Double.class) ||
-				clazz.equals(Long.class) ||
-				clazz.equals(Float.class);
-	}
-
-	private void printType(Class<?> clz, String name) {
-		if (isWrapperType(clz) || clz == String.class) {
-			logger.debug(">< >< {} ==>  wrapperType", name);
-		} else if (clz.isArray()) {
-			logger.debug(">< >< {} ==>  array", name);
-		} else if (Collection.class.isAssignableFrom(clz)) {
-			logger.debug(">< >< {} ==>  collection", name);
-		} else if (Map.class.isAssignableFrom(clz)) {
-			logger.debug(">< >< {} ==>  map", name);
-		} else {
-			logger.debug(">< >< {} ==> class type", name);
-		}
-	}
-
 	@Test
-	public void typeTest() {
-		Set<String> set = new HashSet<>();
-		printType(set.getClass(), "set");
-		Map<String, Object> map = new LinkedHashMap<>();
-		printType(map.getClass(), "map");
-		List<String> list = new ArrayList<>();
-		printType(list.getClass(), "list");
-		Object object = new Object();
-		printType(object.getClass(), "object");
-		String string = new String();
-		printType(string.getClass(), "string");
-		Integer integer = new Integer(1);
-		printType(integer.getClass(), "integer");
+	public void xssFilterValue() {
+		Set<String> other = new HashSet<>();
+		other.add(otherFilter);
+
+		Foo foo = new Foo();
+		foo.setOtherFilter(other);
+
+		ObjectRefConverter converter = new BasicXssFilterConverter(xssFilter, xssSaxFilter);
+		ObjectRef ref = new ObjectRef(converter);
+
+		Foo result = ref.getValue(foo, Foo.class);
+		Set<String> other2 = result.getOtherFilter();
+		String otherFilter2 = other2.iterator().next();
+
+		Assert.assertEquals(otherFilter2, xssSaxFilter.doFilter(otherFilter));
 	}
 
 	@Test
@@ -117,7 +92,7 @@ public class XssContollerTest {
 	}
 
 	@Test
-	public void xssFilter() throws Exception {
+	public void postXssFilter() throws Exception {
 		Foo foo = new Foo();
 		foo.setIdx("10000");
 		foo.setFilter(filter);
@@ -135,12 +110,24 @@ public class XssContollerTest {
 		}
 		foo.setToos(toos);
 
-		List<Doo> doos = new ArrayList<>();
+		List<Doo> doos = new LinkedList<>();
 
 		for (int i = 0; i < 10; i++) {
 			doos.add(new Doo(saxFilter, saxFilter));
 		}
 		foo.setDoos(doos);
+
+		Map<String, String> map = new HashMap<>();
+		map.put("a", otherFilter);
+		map.put("b", otherFilter);
+		map.put("c", otherFilter);
+		map.put("d", otherFilter);
+		map.put("e", otherFilter);
+
+		foo.setMap(map);
+
+		String[] arrays = { otherFilter, otherFilter, otherFilter};
+		foo.setArrays(arrays);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		String json = objectMapper.writeValueAsString(foo);
@@ -156,12 +143,13 @@ public class XssContollerTest {
 				.andExpect(jsonPath("$.filter", is(xssFilter.doFilter(filter))))
 				.andExpect(jsonPath("$.escape", is(XssPreventer.escape(escape))))
 				.andExpect(jsonPath("$.use", is(true)))
-				//.andExpect(jsonPath("$.otherFilter[0]", is(xssSaxFilter.doFilter(otherFilter))))
+				.andExpect(jsonPath("$.otherFilter[0]", is(xssSaxFilter.doFilter(otherFilter))))
 				.andExpect(jsonPath("$.toos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
 				.andExpect(jsonPath("$.toos[0].noFilter", is(saxFilter)))
 				.andExpect(jsonPath("$.doos[0].saxFilter", is(xssSaxFilter.doFilter(saxFilter))))
 				.andExpect(jsonPath("$.doos[0].noFilter", is(saxFilter)))
+				.andExpect(jsonPath("$.map.e", is(xssSaxFilter.doFilter(otherFilter))))
+				.andExpect(jsonPath("$.arrays[0]", is(xssSaxFilter.doFilter(otherFilter))))
 				.andDo(print());
-
 	}
 }
