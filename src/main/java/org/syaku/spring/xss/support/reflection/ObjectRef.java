@@ -111,10 +111,6 @@ public class ObjectRef {
 				clazz.equals(Float.class);
 	}
 
-	private Object getType(Object value) {
-		return getType(value, null);
-	}
-
 	private Object getType(Object value, Annotation annotation) {
 		if (value == null) return null;
 		Class clz = value.getClass();
