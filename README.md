@@ -43,3 +43,78 @@ public class LucyXssFilterConfiguration {
 
 자바빈 클래스와 자바빈 클래스 항목, 메서드 파라메터에 어노테이션을 사용할 수 있다. 메서드 파라메터는 꼭 @Cotroller 스테레오 타입의 클래스에서만 사용할 수 있다.
 
+
+
+### 선언적인 어노테이션 사용방법
+
+@Defence 어노테이션은 @Controller 스테레오 타입에 한해 클래스 메서드 파라메터, 클래스(자식 포함), 클래스 항목에만 사용할 수 있다. 그리고 문자열만 필터된다.
+
+```java
+public void method(
+	@Defence String filter, // (1)
+	@Defence Foo foo			 // (2)
+) { ...
+
+```
+
+메서드 파라메터가 (1)참조타입(기본타입)인 경우에만 필터가 작동하고 (2)클래스타입? 인 경우 클래스 내부에 또다시 @Defence 을 선언해야 한다. 다시말해 (2)번의 경우 필터 되는 것이 아니라 필터 대상이 된다. 실제 필터가 작동되게 하려면 Foo 클래스 내부에 @Defence 을 선언해야 한다.
+
+```java
+@Defence
+public class Foo { ...
+```
+
+클래스에 @Defence 을 선언하면 모두를 항목이 필터된다.
+
+```java
+@Defence // (1)
+public class Foo extends Too { ...
+```
+
+상속의 경우 (1)번과 같이 클래스에 선언하면 Foo Too 모두 필터가 된다. 만약 항목에 @Defence 을 선언한다면 자식 클래스 항목에도 @Defence 을 선언해야 필터된다. 
+단 자식 클래스는 클래스에 @Defence 를 선언할 수 없다. 꼭 항목에 선언해야 한다. (이부분은 추후 패치할 예정이다.)
+부모 클래스에 @Defence 를 선언하고 자식 클래스 항목에 @Defence 를 선언하면 자식 클래스 항목의 @Defence 무시된다. 부모 클래스 @Defence 선언에 따라 필터된다.
+
+```java
+public class Foo {
+	@Defence
+	private String name;
+	@Defence
+	private List<String> lists; // (1)
+	@Defence
+	private List<Too> toos; // (2)
+	...
+	
+```
+
+클래스 항목에 @Defence 을 선언하면 해당 항목만 필터한다. (1)번의 경우 제너릭타입이 참조나 기본타입인 경우 필터가 되지만 (2)번 같이 클래스타입인 경우는 필터가 되는 것이 아니라 필터 대상이 되고 Too 클래스 내부에 @Defence 을 선언해야 한다.
+
+
+### 적용하기
+
+```java
+@Controller
+@RequestMapping("/xss")
+public class XssController {
+
+	@GetMapping("")
+	@ResponseBody
+	public Map<String, String> dispView(
+			@RequestParam(value = "html", required = false) @Defence(XssType.ESCAPE) String html) {
+			
+		Map<String, String> result = new HashMap<>();
+		result.put("html", html);
+		return result;
+	}
+
+	@PostMapping("/{idx}")
+	@ResponseBody
+	public Foo procPost(
+			@Defence @RequestBody Foo foo,
+			@Defence @PathVariable("idx") String idx) {
+			
+		foo.setIdx(idx);
+		return foo;
+	}
+}
+```
