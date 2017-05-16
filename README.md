@@ -1,4 +1,4 @@
-# lucy xss annotation
+# Spring XSS Filter Annotation : lucy xss filter
 
 [![Build Status](https://semaphoreci.com/api/v1/syaku/lucy-xss-annotation/branches/master/shields_badge.svg)](https://semaphoreci.com/syaku/lucy-xss-annotation) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/44746b1e1bea4cc8ae35122a732d8bf9)](https://www.codacy.com/app/syaku/lucy-xss-annotation?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=syakuis/lucy-xss-annotation&amp;utm_campaign=Badge_Grade) 
 
