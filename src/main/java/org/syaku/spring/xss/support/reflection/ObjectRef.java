@@ -160,6 +160,11 @@ public class ObjectRef {
 		for(Field field : fields) {
 			field.setAccessible(true);
 			Object value = field.get(object);
+
+			if (isWrapperType(value.getClass())) {
+				continue;
+			}
+
 			Annotation annotation = annotationClz;
 			boolean isAnnoType = isAnnoTypeClz;
 

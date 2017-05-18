@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.syaku.spring.apps.xss.domain.Doo;
 import org.syaku.spring.apps.xss.domain.Foo;
+import org.syaku.spring.apps.xss.domain.Syaku;
 import org.syaku.spring.apps.xss.domain.Too;
 import org.syaku.spring.boot.Bootstrap;
 import org.syaku.spring.boot.servlet.ServletConfiguration;
@@ -66,6 +67,19 @@ public class XssContollerTest {
 	@Before
 	public void setUp() {
 		mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+	}
+
+	@Test
+	public void final_field_test() throws ObjectRefException {
+		Syaku syaku = new Syaku();
+		syaku.setName("\"><script>alert('xss_');</script>");
+		syaku.setNum(100000);
+
+		ObjectRefConverter converter = new BasicXssFilterConverter(xssFilter, xssSaxFilter);
+		ObjectRef ref = new ObjectRef(converter);
+
+		Syaku result = ref.getValue(syaku, Syaku.class);
+		System.out.println(result.toString());
 	}
 
 	@Test
