@@ -16,12 +16,12 @@ public class LucyXssFilterConfiguration {
 
 	@Bean
 	public XssSaxFilter xssSaxFilter() {
-		return XssSaxFilter.getInstance("lucy-xss-sax.xml", true);
+		return XssSaxFilter.getInstance("lucy-xss-sax.xml", false);
 	}
 
 	@Bean
 	public XssFilter xssFilter() {
-		return XssFilter.getInstance("lucy-xss.xml", true);
+		return XssFilter.getInstance("lucy-xss.xml", false);
 	}
 
 	@Bean

@@ -14,7 +14,4 @@ import org.syaku.spring.boot.servlet.ServletConfiguration;
 		ServletConfiguration.class
 })
 public class BootstrapTest {
-	@Test
-	public void test() {
-	}
 }

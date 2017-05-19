@@ -161,7 +161,7 @@ public class ObjectRef {
 			field.setAccessible(true);
 			Object value = field.get(object);
 
-			if (isWrapperType(value.getClass())) {
+			if (value == null || isWrapperType(value.getClass())) {
 				continue;
 			}
 
