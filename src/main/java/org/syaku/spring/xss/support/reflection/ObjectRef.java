@@ -118,7 +118,9 @@ public class ObjectRef {
 		Class clz = value.getClass();
 
 		try {
-			if (isWrapperType(clz) || clz == String.class) {
+			if (isWrapperType(clz)) {
+				return value;
+			} else if (clz == String.class) {
 				logger.debug(">< >< === Reference Type {} {} {}", annotation, value, clz);
 				return converter.value(value, annotation);
 			} else if (clz.isArray()) {

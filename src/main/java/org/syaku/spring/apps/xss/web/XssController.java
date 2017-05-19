@@ -18,6 +18,11 @@ import java.util.Map;
 @RequestMapping("/xss")
 public class XssController {
 
+	@GetMapping("/test")
+	public String dispTest() {
+		return "xss/xss";
+	}
+
 	@GetMapping("")
 	@ResponseBody
 	public Map<String, String> dispView(
