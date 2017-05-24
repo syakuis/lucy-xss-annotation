@@ -2,7 +2,13 @@
 
 [![Build Status](https://semaphoreci.com/api/v1/syaku/lucy-xss-annotation/branches/master/shields_badge.svg)](https://semaphoreci.com/syaku/lucy-xss-annotation) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/44746b1e1bea4cc8ae35122a732d8bf9)](https://www.codacy.com/app/syaku/lucy-xss-annotation?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=syakuis/lucy-xss-annotation&amp;utm_campaign=Badge_Grade) 
 
-https://github.com/naver/lucy-xss-filter 를 선언적인 방식(@annotation)으로 필터할 수 있게 개발하였습니다.
+XSS(크로스 사이트 스크립팅) 취약점을 방어하기 위한 Secured Coding 을 자동화 시켜주는 프로그램입니다. 필터링을 자동화의 처리하는 기본적인 라이브러리로 https://github.com/naver/lucy-xss-filter 를 이용하고 이것을 선언적인 방식(@annotation)으로 구현하여 쉽게 적용할 수 있게 개발하였습니다.
+
+### 문제점에 대하여...
+
+- 요청된 입력값을 모두 필터할 경우 
+
+
 
 테스트용 소스와 함께 포함되어 있어 **기본 클래스는 다음과 같습니다.**
 

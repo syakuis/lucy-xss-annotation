@@ -71,14 +71,10 @@ public class XssContollerTest {
 
 	@Test
 	public void final_field_test() throws ObjectRefException {
-		Syaku syaku = new Syaku();
-		syaku.setName("\"><script>alert('xss_');</script>");
-		syaku.setNum(100000);
-
 		ObjectRefConverter converter = new BasicXssFilterConverter(xssFilter, xssSaxFilter);
 		ObjectRef ref = new ObjectRef(converter);
 
-		Syaku result = ref.getValue(syaku, Syaku.class);
+		Foo result = ref.getValue(new Foo(), Foo.class);
 		System.out.println(result.toString());
 	}
 

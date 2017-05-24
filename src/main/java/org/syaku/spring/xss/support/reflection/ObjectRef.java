@@ -12,10 +12,6 @@ import java.util.*;
 
 /**
  * 리플랙션을 이용하여 객체를 조작한다.
- *
- * 1. 모든 타입의 객체를 변경한다.
- * 2. 원하는 어노테이션의 객체를 변경한다.
- *
  * @author Seok Kyun. Choi. 최석균 (Syaku)
  * @site http ://syaku.tistory.com
  * @since 2017. 4. 24.
@@ -100,7 +96,7 @@ public class ObjectRef {
 		return args;
 	}
 
-	private boolean isWrapperType(Class<?> clazz) {
+	private boolean isTypeIgnore(Class<?> clazz) {
 		return clazz.equals(Boolean.class) ||
 				clazz.equals(Integer.class) ||
 				clazz.equals(Character.class) ||
@@ -108,7 +104,10 @@ public class ObjectRef {
 				clazz.equals(Short.class) ||
 				clazz.equals(Double.class) ||
 				clazz.equals(Long.class) ||
-				clazz.equals(Float.class);
+				clazz.equals(Float.class) ||
+				clazz.equals(Date.class) ||
+				// array primitive type
+				(clazz.isArray() && clazz.getComponentType().isPrimitive());
 	}
 
 	private Object getType(Object value, Annotation annotation) throws ObjectRefException {
@@ -118,7 +117,7 @@ public class ObjectRef {
 		Class clz = value.getClass();
 
 		try {
-			if (isWrapperType(clz)) {
+			if (isTypeIgnore(clz)) {
 				return value;
 			} else if (clz == String.class) {
 				logger.debug(">< >< === Reference Type {} {} {}", annotation, value, clz);
@@ -163,7 +162,7 @@ public class ObjectRef {
 			field.setAccessible(true);
 			Object value = field.get(object);
 
-			if (value == null || isWrapperType(value.getClass())) {
+			if (value == null || isTypeIgnore(value.getClass())) {
 				continue;
 			}
 
