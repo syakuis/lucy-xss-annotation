@@ -24,49 +24,6 @@ public class Reflect<T> {
 	private final T object;
 	private final ReflectConverter converter;
 
-	public static void upper2(Object object) throws IllegalAccessException, NoSuchFieldException {
-		Class<?> clazz = object.getClass();
-
-		if (object == null || clazz != String.class) {
-			return;
-		}
-
-		Field field = clazz.getDeclaredField("value");
-		field.setAccessible(true);
-
-		String aValue = new String(String.valueOf(object)).toUpperCase();
-		field.set(object, aValue.toCharArray());
-	}
-
-	public static void upper(Object object) throws IllegalAccessException, NoSuchFieldException {
-		Class<?> clazz = object.getClass();
-
-		if (object == null || clazz != String.class) {
-			return;
-		}
-
-		Field field = clazz.getDeclaredField("value");
-		field.setAccessible(true);
-
-		char[] value = (char[]) field.get(object);
-
-		if (value.length != 0) {
-			String aValue = new String(value).toUpperCase();
-			field.set(object, aValue.toCharArray());
-
-			/*
-
-			Field modifiersField = Field.class.getDeclaredField("modifiers");
-			modifiersField.setAccessible(true);
-			modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-			field.set(object, aValue);
-			*/
-		}
-
-		// String aValue = new String(object.toString()).toUpperCase();
-	}
-
 	public Reflect(T object, ReflectConverter converter) {
 		if (object == null || converter == null) {
 			throw new IllegalArgumentException("this argument is required; it must not be null");
@@ -194,7 +151,7 @@ public class Reflect<T> {
 
 				if (aValue != null) {
 					if (!Modifier.isFinal(field.getModifiers())) {
-						logger.debug(">< >< update value {} = {} -> {}", field.getName(), value, aValue);
+						logger.debug(">< >< update field value {} = {} -> {}", field.getName(), value, aValue);
 						field.set(object, aValue);
 					} else {
 						logger.debug(">< >< update final value {} = {} -> {}", field.getName(), value, aValue);
@@ -218,7 +175,7 @@ public class Reflect<T> {
 		Field field = clazz.getDeclaredField("value");
 		field.setAccessible(true);
 
-		logger.debug(">< >< update value {} = {} -> {}", field.getName(), field.get(object), aValue);
+		logger.debug(">< >< update string value {} = {} -> {}", field.getName(), field.get(object), aValue);
 
 		field.set(object, aValue.toCharArray());
 	}

@@ -13,6 +13,7 @@ import org.syaku.spring.xss.support.reflection.Reflect;
 import org.syaku.spring.xss.support.reflection.ReflectConverter;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -23,29 +24,197 @@ import java.util.*;
 public class ReflectTest {
 	private static final Logger logger = LoggerFactory.getLogger(ReflectTest.class);
 
+	private void reflectString(Object object, boolean upper) throws IllegalAccessException, NoSuchFieldException {
+		Class<?> clazz = object.getClass();
+
+		Field field = clazz.getDeclaredField("value");
+		field.setAccessible(true);
+
+		String aValue = new String(String.valueOf(object));
+
+		if (upper) {
+			aValue = aValue.toUpperCase();
+		} else {
+			aValue = aValue.toLowerCase();
+		}
+
+		field.set(object, aValue.toCharArray());
+	}
+
+	private void reflectField(Object object, boolean upper) throws IllegalAccessException, NoSuchFieldException {
+		Class<?> clazz = object.getClass();
+
+		for (Field field : clazz.getDeclaredFields()) {
+			field.setAccessible(true);
+			Object value = field.get(object);
+
+			if (value == null) {
+				continue;
+			}
+
+			String aValue = new String(value.toString());
+
+			if (upper) {
+				aValue = aValue.toUpperCase();
+			} else {
+				aValue = aValue.toLowerCase();
+			}
+
+			field.set(object, aValue);
+		}
+	}
+
+	private void reflectCollection(Object object) throws InvocationTargetException, NoSuchMethodException, NoSuchFieldException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+		//Object[] objects = (Object[]) object;
+
+		//logger.debug("{} {}", objects.hashCode(), object.hashCode());
+
+		if (!Collection.class.isAssignableFrom(object.getClass())) {
+			return;
+		}
+
+		Collection<String> collection = (Collection) object;
+
+		Collection result;
+
+		Class<?> arraysType = Class.forName("java.util.Arrays$ArrayList");
+		if (arraysType.isAssignableFrom(object.getClass())) {
+			result = new ArrayList();
+		} else {
+			result = (Collection) object.getClass().newInstance();
+		}
+
+		for (String text : collection) {
+			result.add(text.toUpperCase());
+		}
+
+		Class<? extends Collection> clazz = collection.getClass();
+//		Constructor[] constructors = clazz.getDeclaredConstructors();
+//
+//		if (constructors.length > 0) {
+//			constructors[0].setAccessible(true);
+//			constructors[0].newInstance(result);
+//		}
+
+//		for (Constructor constructor : constructors) {
+//			constructor.setAccessible(true);
+//			logger.debug("{} <---", constructor.getName());
+//
+//			//constructor.newInstance(new Object[]{});
+//		}
+
+		logger.debug("{}", clazz);
+		for (Field field : clazz.getDeclaredFields()) {
+			field.setAccessible(true);
+			Object value = field.get(object);
+			logger.debug("{} {}", field.getType().getComponentType(), field.getName());
+
+			if (field.getName().equals("a")) {
+				Field modifiersField = Field.class.getDeclaredField("modifiers");
+				modifiersField.setAccessible(true);
+				modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+				field.set(object, new Object[]{});
+			} else if (field.getName().equals("elementData")) {
+				logger.debug("{} {} {}", field.getType(), field.getName(), value);
+			}
+		}
+	}
+
 	/**
 	 * good 이라는 값을 변경하면 모든 값들이 변경된다.
 	 * 하지만 Foo 클래스의 good 을 리플랙션으로 변경하면 해당 클래스만 변경된다.
+	 * 이건 문자 타입을 직접 제어했기 때문에 모두가 변경되는 것이고
+	 * 한번 클래스 타입으로 랩핑하면 클래스 타입을 참조하기 때문에 단일적으로만 변경된다.
 	 * @throws Exception
 	 */
 	@Test
-	public void pass_by_referance_test() throws Exception {
+	public void reflection_string_test() throws Exception {
 		String name = "good";
 
 		Foo foo = new Foo();
 		foo.setName("good");
 		foo.setName2("good");
 
-		Reflect.upper2("good");
+		reflectString(name, true);
 
-		logger.debug("{}", name);
-		logger.debug("{}", foo);
+		logger.debug("{}, {}", name, foo);
+
+		reflectField(foo, false);
+
+		logger.debug("{}, {}", name, foo);
+
+		List<String> list = new ArrayList<>();
+		list.add("aa");
+		list.add("aa");
+		list.add("aa");
+
+		for (String string : list) {
+			reflectString(string, true);
+			logger.debug("{}, {}", list, string);
+		}
 	}
 
+	/**
+	 * collection 의 같은 값의 문자를 하나라도 변경하면 같은 값 모두가 변경된다.
+	 * Arrays.asList() 는 또 다른 리스트 타입이고 이는 불편이여서 직접 변경할 수 없다. 해당 클래스를 열어보면 알 수 있다.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void reflection_collection_test() throws Exception {
+		List<String> arrayListBak = new ArrayList<>();
+		arrayListBak.add("a");
+		arrayListBak.add("b");
+		arrayListBak.add("a");
+
+		List<String> arrayList = new ArrayList<>();
+		arrayList.add("a");
+		arrayList.add("b");
+		arrayList.add("a");
+
+		List<String> arraysList = Arrays.asList("b", "b", "b");
+		// UnsupportedOperationException 발생
+		// arraysList.add("good");
+
+		Assert.assertNotSame(arrayList, arraysList);
+
+		Collection collection = arrayList.getClass().newInstance();
+
+		for (String text : arrayList) {
+			collection.add(text.toUpperCase());
+		}
+
+		arrayList.clear();
+		arrayList.addAll(collection);
+
+		Assert.assertEquals(arrayList, collection);
+		Assert.assertNotSame(arrayList, collection);
+
+		logger.debug("{} != {} == {}", arrayListBak, arrayList, collection);
+
+		reflectCollection(arraysList);
+		reflectCollection(arrayList);
+		reflectCollection(new HashSet<>());
+		reflectCollection(new HashMap<>());
+		reflectCollection(new String[]{});
+
+		//Assert.assertEquals(arraysList.size(), 0);
+
+
+		logger.debug("{} != {} == {}", arraysList, arrayList, collection);
+	}
+
+	/**
+	 * 컬랙션을 변경하기 위해 새로 객체를 생성하서 새로 만들 후 다시 대입해야 한다.
+	 * @throws Exception
+	 */
 	@Test
 	public void referenceType_test() throws Exception {
+		String name = "syaku";
 		ReferenceModel model = new ReferenceModel("syaku");
 		model.setString("syaku");
+		model.setString2("syaku");
 		model.setNoConverter("syaku");
 		model.setNullString(null);
 
@@ -56,6 +225,7 @@ public class ReflectTest {
 
 		Assert.assertEquals(model.getFinalString(), "SYAKU");
 		Assert.assertEquals(model.getString(), "SYAKU");
+		Assert.assertEquals(model.getString2(), "SYAKU");
 		Assert.assertEquals(model.getNoConverter(), "syaku");
 		Assert.assertNull(model.getNullString());
 		Assert.assertNull(model.getNoInstance());
@@ -132,6 +302,8 @@ class ReferenceModel {
 	private final String finalString;
 	@Defence
 	private String string;
+	@Defence
+	private String string2;
 	@DefenceIgnore
 	private String noConverter;
 	@Defence
