@@ -7,8 +7,7 @@ import org.syaku.spring.xss.support.Defence;
 import org.syaku.spring.xss.support.DefenceIgnore;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -64,7 +63,7 @@ public class Reflect<T> {
 				continue;
 			}
 
-			typeSwitch(result[i], annotation);
+			//typeSwitch(result[i], annotation);
 		}
 	}
 
@@ -75,16 +74,78 @@ public class Reflect<T> {
 	 * @throws IllegalAccessException
 	 * @throws NoSuchFieldException
 	 */
-	private void collection(Object object, Annotation annotation) throws IllegalAccessException, NoSuchFieldException {
-		Collection<?> result = (Collection) object;
+	private void collection(Object object, Field field, Annotation annotation) throws IllegalAccessException, NoSuchFieldException {
+		/*Class<?> clazz = object.getClass();
+		System.out.println("--12122>" + clazz.getGenericSuperclass());
+		for (Type type : clazz.getGenericInterfaces()) {
+			System.out.println("---->" + type);
+		}
+
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!" + clazz.getComponentType());
+		System.out.println(">>>>>>>>>>>>>>>>>" + field.getType());
+
+		TypeVariable<?>[] types = clazz.getTypeParameters();
+
+		for (TypeVariable typeVariable : types) {
+			System.out.println(Arrays.asList(typeVariable.getBounds()));
+		}*/
+
+		Type type = field.getGenericType();
+		if (type instanceof ParameterizedType) {
+			ParameterizedType pType = (ParameterizedType)type;
+
+			if (pType.getActualTypeArguments()[0] == String.class) {
+				System.out.println("string:" + object);
+			} else {
+				System.out.println("nonstring:" + object);
+				for (Object value : (Collection) object) {
+
+					if (value == null || isTypeIgnore(value.getClass())) {
+						continue;
+					}
+
+					findByObjectField(value, annotation);
+				}
+			}
+		} else {
+			System.out.println("Type: " + field.getType());
+			findByObjectField(object, annotation);
+		}
+
+		/*ParameterizedType stringListType = (ParameterizedType) field.getGenericType();
+		Type[] types = stringListType.getActualTypeArguments();
+		System.out.println(stringListType + "//" + stringListType.getRawType());
+
+		if (stringListType.getRawType() == String.class) {
+			System.out.println(object);
+		} else {
+			findByObjectField(object, annotation);
+		}*/
+
+		/*if (types.length > 1) {
+			findByObjectField(object, annotation);
+		} else {
+			if (types[0] == String.class) {
+				System.out.println(types[0]);
+				System.out.println(object);
+			}
+		}*/
+
+		/*if (stringListClass == String.class) {
+			for(Object value : (Collection) object) {
+				System.out.println("-------->" + value);
+			}
+		}*/
+
+		/*Collection<?> result = (Collection) object;
 		for(Object value : result) {
 
 			if (value == null || isTypeIgnore(value.getClass())) {
 				continue;
 			}
 
-			typeSwitch(value, annotation);
-		}
+			//typeSwitch(value, annotation);
+		}*/
 	}
 
 	private void map(Object object, Annotation annotation) throws IllegalAccessException, NoSuchFieldException {
@@ -97,18 +158,18 @@ public class Reflect<T> {
 			if (value == null || isTypeIgnore(value.getClass())) {
 				continue;
 			}
-			typeSwitch(value, annotation);
+			//typeSwitch(value, annotation);
 		}
 	}
 
-	private void typeSwitch(Object object, Annotation annotation) throws IllegalAccessException, NoSuchFieldException {
+	private void typeSwitch(Object object, Field field, Annotation annotation) throws IllegalAccessException, NoSuchFieldException {
 		Class<?> clazz = object.getClass();
 		if (clazz == String.class) {
 			setStringValue(object, annotation);
 		} else if (clazz.isArray()) {
 			array(object, annotation);
 		} else if (Collection.class.isAssignableFrom(clazz)) {
-			collection(object, annotation);
+			collection(object, field, annotation);
 		} else if (Map.class.isAssignableFrom(clazz)) {
 			map(object, annotation);
 		} else {
@@ -159,7 +220,7 @@ public class Reflect<T> {
 					}
 				}
 			} else {
-				typeSwitch(value, annotation);
+				typeSwitch(value, field, annotation);
 			}
 		}
 	}

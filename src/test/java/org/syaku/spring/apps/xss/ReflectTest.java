@@ -252,11 +252,18 @@ public class ReflectTest {
 		map.put("map3", "good");
 		model.setMap(map);
 
-		List<String> list = new ArrayList<>();
-		list.add("list1");
-		list.add("list2");
-		list.add("list2");
+		List<List<String>> list = new ArrayList<>();
+		list.add(Arrays.asList("list1"));
+		list.add(Arrays.asList("list1"));
+		list.add(Arrays.asList("list1"));
 		model.setList(list);
+
+
+		List<Map<String, List<String>>> listMap = new ArrayList<>();
+		Map<String, List<String>> mapList = new HashMap<>();
+		mapList.put("111", Arrays.asList("good"));
+		listMap.add(mapList);
+		model.setListMap(listMap);
 
 		model.setArray(new String[]{ "array1", "array2", "array2" });
 
@@ -330,7 +337,8 @@ class CollectionModel {
 	private List<Integer> integer;
 	private Map<String, Boolean> bool;
 	private final Set<Date> date;
-	private List<String> list;
+	private List<List<String>> list;
+	private List<Map<String, List<String>>> listMap;
 	private Map<String, String> map;
 
 	private String[] array;
